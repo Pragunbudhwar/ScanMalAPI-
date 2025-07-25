@@ -1,0 +1,106 @@
+import os
+import logging
+import subprocess
+import time
+import azure.functions as func
+from azure.storage.fileshare import ShareFileClient
+from azure.storage.blob import BlobServiceClient
+
+def main(blob: func.InputStream):
+    logging.info(f"Processing blob: Name: {blob.name}, Size: {blob.length} bytes")
+
+    try:
+        blob_data = blob.read()
+        blob_name = os.path.basename(blob.name)
+
+        # Azure File Share details
+        conn_str = os.getenv("FILES_SHARE_CONN_STRING")
+        share_name = os.getenv("FILES_SHARE_NAME")
+        if not conn_str or not share_name:
+            raise ValueError("Environment variables FILES_SHARE_CONN_STRING or FILES_SHARE_NAME are not set.")
+
+        file_client = ShareFileClient.from_connection_string(conn_str, share_name, blob_name)
+        file_client.create_file(size=len(blob_data))
+        file_client.upload_file(blob_data, length=len(blob_data))
+        logging.info(f"Copied blob '{blob_name}' to file share '{share_name}'.")
+
+        # ACI config
+        RG = os.getenv("RG")
+        IMAGE = os.getenv("IMAGE", "clamav/clamav:latest")
+        STORAGE_ACCOUNT = os.getenv("STORAGE_ACCOUNT")
+        FILE_SHARE = os.getenv("FILE_SHARE")
+        STORAGE_KEY = os.getenv("STORAGE_KEY")
+        VNET = os.getenv("VNET")
+        SUBNET = os.getenv("SUBNET")
+
+        if not all([RG, IMAGE, STORAGE_ACCOUNT, FILE_SHARE, STORAGE_KEY, VNET, SUBNET]):
+            raise ValueError("One or more required environment variables for ACI are missing.")
+
+        ACI_NAME = f"clamav-scan-{int(time.time())}"
+
+        # ACI launch
+        cmd = [
+            "az", "container", "create",
+            "--resource-group", RG,
+            "--name", ACI_NAME,
+            "--image", IMAGE,
+            "--os-type", "Linux",
+            "--restart-policy", "Never",
+            "--cpu", "1",
+            "--memory", "1.5",
+            "--azure-file-volume-share-name", FILE_SHARE,
+            "--azure-file-volume-account-name", STORAGE_ACCOUNT,
+            "--azure-file-volume-account-key", STORAGE_KEY,
+            "--azure-file-volume-mount-path", "/malware",
+            "--command-line", "/bin/sh -c 'clamscan -r /malware > /malware/report.txt'",
+            "--vnet", VNET,
+            "--subnet", SUBNET
+        ]
+
+        logging.info(f"Launching ACI container: {ACI_NAME}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            logging.error(f"ACI launch failed:\n{result.stderr}")
+            raise RuntimeError("ACI container launch failed")
+
+        logging.info(f"ACI launched successfully:\n{result.stdout}")
+
+        # --- NEW SECTION: Wait for /malware/report.txt and upload to blob ---
+
+        # Wait for /malware/report.txt
+        report_file_path = "report.txt"
+        report_file_client = ShareFileClient.from_connection_string(conn_str, share_name, report_file_path)
+
+        logging.info("Waiting for scan report (report.txt)...")
+
+        max_wait = 60
+        waited = 0
+        while waited < max_wait:
+            try:
+                report_file_client.get_file_properties()
+                break
+            except:
+                time.sleep(5)
+                waited += 5
+        else:
+            raise TimeoutError("Timeout: report.txt not found in file share.")
+
+        # Read report content
+        report_stream = report_file_client.download_file()
+        report_content = report_stream.readall()
+
+        # Upload to "report" blob container
+        blob_conn_str = conn_str  # reusing file share connection
+        report_container = os.getenv("REPORT_CONTAINER", "report")
+        blob_service = BlobServiceClient.from_connection_string(blob_conn_str)
+        blob_client = blob_service.get_blob_client(container=report_container, blob=report_file_path)
+
+        blob_client.upload_blob(report_content, overwrite=True)
+        logging.info(f"Scan report uploaded to blob container '{report_container}'.")
+
+    except Exception as e:
+        logging.error(f"Function failed: {e}")
+        raise
+
+
