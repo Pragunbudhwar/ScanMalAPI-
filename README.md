@@ -70,7 +70,7 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ## 📦 General Architechture
 
-![Project Logo](images/logo.png)
+![Project Architechture](https://github.com/Pragunbudhwar/ScanMalAPI-/blob/b3d8f3ca66ec75926a0704177fec6a27e8be77d0/The%20General%20Architechture.png)
 
 ---
 
