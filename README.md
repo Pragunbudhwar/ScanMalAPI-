@@ -77,3 +77,10 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
   "verdict": "HIGH RISK",
   "report_path": "https://<storage>/report/invoice.txt"
 }
+
+---
+
+## 📦 General Architechture
+
+![Project Logo](images/logo.png)
+
