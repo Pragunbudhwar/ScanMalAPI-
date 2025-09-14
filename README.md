@@ -74,6 +74,9 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ---
 
+## 🎬 The API Architechture
+![Project API](https://github.com/Pragunbudhwar/ScanMalAPI-/blob/04b9e6c99885c1ebad543496910eb22f1917752c/The%20API%20Infrastructure.png)
+
 ## 📁 Output Example
 
 ```json
