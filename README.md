@@ -68,7 +68,7 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ---
 
-## 📦 General Architechture
+## 📦 The Complete Project Architechture
 
 ![Project Architechture](https://github.com/Pragunbudhwar/ScanMalAPI-/blob/b3d8f3ca66ec75926a0704177fec6a27e8be77d0/The%20General%20Architechture.png)
 
@@ -76,6 +76,11 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ## 🎬 The API Architechture
 ![Project API](https://github.com/Pragunbudhwar/ScanMalAPI-/blob/04b9e6c99885c1ebad543496910eb22f1917752c/The%20API%20Infrastructure.png)
+
+---
+## 🎬 The Sandbox (ACI) Architechture
+
+
 
 ## 📁 Output Example
 
