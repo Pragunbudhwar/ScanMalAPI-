@@ -79,6 +79,7 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ---
 ## 🎬 The Sandbox (ACI) Architechture
+![Sandbox Architechture](https://github.com/Pragunbudhwar/ScanMalAPI-/blob/2d61a7fd4ed01a499efb7a3f25c84ed2efd5365d/The%20Sandbox%20.png)
 
 
 
