@@ -66,6 +66,14 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 ---
 
+---
+
+## 📦 General Architechture
+
+![Project Logo](images/logo.png)
+
+---
+
 ## 📁 Output Example
 
 ```json
@@ -78,9 +86,5 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
   "report_path": "https://<storage>/report/invoice.txt"
 }
 
----
 
-## 📦 General Architechture
-
-![Project Logo](images/logo.png)
 
