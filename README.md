@@ -83,7 +83,7 @@ It tells you *what the threat is*, *what it could do*, and then *executes it saf
 
 
 
-## 📁 Output Example
+##  Output Example
 
 ```json
 {
